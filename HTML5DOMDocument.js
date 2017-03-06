@@ -48,10 +48,18 @@ html5DOMDocument = (function () {
         }
     };
 
-    var insert = function (code) {
+    /**
+     * 
+     * @param string code
+     * @param string target Available values: afterBodyBegin, beforeBodyEnd, [element, innerHTML], [element, outerHTML], [element, beforeBegin], [element, afterBegin], [element, beforeEnd], [element, afterEnd]
+     */
+    var insert = function (code, target) {
+        if (typeof target === 'undefined') {
+            target = 'beforeBodyEnd';
+        }
+
         executionsCounter++;
         var element = document.createElement('html');
-        //code = '<html><head><style>*{border:2px solid red}</style><link rel="stylesheet" href="http://all.projects/playground/style.css"></link></head><body>AAAAAAAAAA<script>alert(1);</script><script src="http://all.projects/playground/alert.js"></script></body></html>';
         element.innerHTML = code;
 
         prepare(element, executionsCounter);
@@ -65,7 +73,28 @@ html5DOMDocument = (function () {
         var bodyElements = element.querySelectorAll('body');
         var bodyElementsCount = bodyElements.length;
         for (var i = 0; i < bodyElementsCount; i++) {
-            document.body.insertAdjacentHTML('beforeend', bodyElements[i].innerHTML);
+            if (target === 'afterBodyBegin') {
+                document.body.insertAdjacentHTML('afterbegin', bodyElements[i].innerHTML);
+            } else if (target === 'beforeBodyEnd') {
+                document.body.insertAdjacentHTML('beforeend', bodyElements[i].innerHTML);
+            } else if (typeof target === 'object' && typeof target[0] !== 'undefined') {
+                if (typeof target[1] === 'undefined') {
+                    target[1] = 'innerHTML';
+                }
+                if (target[1] === 'innerHTML') {
+                    target[0].innerHTML = bodyElements[i].innerHTML;
+                } else if (target[1] === 'outerHTML') {
+                    target[0].outerHTML = bodyElements[i].innerHTML;
+                } else if (target[1] === 'beforeBegin') {
+                    target[0].insertAdjacentHTML('beforebegin', bodyElements[i].innerHTML);
+                } else if (target[1] === 'afterBegin') {
+                    target[0].insertAdjacentHTML('afterend', bodyElements[i].innerHTML);
+                } else if (target[1] === 'beforeEnd') {
+                    target[0].insertAdjacentHTML('beforeend', bodyElements[i].innerHTML);
+                } else if (target[1] === 'afterEnd') {
+                    target[0].insertAdjacentHTML('afterend', bodyElements[i].innerHTML);
+                }
+            }
         }
 
         execute(document, executionsCounter);
