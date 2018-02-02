@@ -1,7 +1,7 @@
 /*
  * HTML5 DOM Document JS
  * http://ivopetkov.com/
- * Copyright 2016, Ivo Petkov
+ * Copyright 2016-2018, Ivo Petkov
  * Free to use under the MIT license.
  */
 
@@ -32,7 +32,8 @@ html5DOMDocument = (function () {
             var src = scriptToExecute.getAttribute('src');
             if (src !== null) {
                 newScriptTag.setAttribute("src", src);
-                if ((typeof scriptToExecute.async === 'undefined' || scriptToExecute.async === false) && i + 1 < scriptsToExecuteCount) {
+                var asyncValue = scriptToExecute.getAttribute('async');
+                if ((asyncValue === null || asyncValue === 'false') && i + 1 < scriptsToExecuteCount) {
                     breakAfterThisScript = true;
                     newScriptTag.addEventListener('load', function () {
                         execute(element, counter);
