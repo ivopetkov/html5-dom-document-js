@@ -63,37 +63,50 @@ html5DOMDocument = (function () {
         var element = document.createElement('html');
         element.innerHTML = code;
 
+        var copyAttributes = function (sourceElement, targetElement) {
+            var sourceElementAttributes = sourceElement.attributes;
+            var attributesCount = sourceElementAttributes.length;
+            for (var i = 0; i < attributesCount; i++) {
+                var attribute = sourceElementAttributes[i];
+                targetElement.setAttribute(attribute.name, attribute.value);
+            }
+        };
+
         prepare(element, executionsCounter);
 
         var headElements = element.querySelectorAll('head');
         var headElementsCount = headElements.length;
         for (var i = 0; i < headElementsCount; i++) {
-            document.head.insertAdjacentHTML('beforeend', headElements[i].innerHTML);
+            var headElement = headElements[i];
+            copyAttributes(headElement, document.head);
+            document.head.insertAdjacentHTML('beforeend', headElement.innerHTML);
         }
 
         var bodyElements = element.querySelectorAll('body');
         var bodyElementsCount = bodyElements.length;
         for (var i = 0; i < bodyElementsCount; i++) {
+            var bodyElement = bodyElements[i];
+            copyAttributes(bodyElement, document.body);
             if (target === 'afterBodyBegin') {
-                document.body.insertAdjacentHTML('afterbegin', bodyElements[i].innerHTML);
+                document.body.insertAdjacentHTML('afterbegin', bodyElement.innerHTML);
             } else if (target === 'beforeBodyEnd') {
-                document.body.insertAdjacentHTML('beforeend', bodyElements[i].innerHTML);
+                document.body.insertAdjacentHTML('beforeend', bodyElement.innerHTML);
             } else if (typeof target === 'object' && typeof target[0] !== 'undefined') {
                 if (typeof target[1] === 'undefined') {
                     target[1] = 'innerHTML';
                 }
                 if (target[1] === 'innerHTML') {
-                    target[0].innerHTML = bodyElements[i].innerHTML;
+                    target[0].innerHTML = bodyElement.innerHTML;
                 } else if (target[1] === 'outerHTML') {
-                    target[0].outerHTML = bodyElements[i].innerHTML;
+                    target[0].outerHTML = bodyElement.innerHTML;
                 } else if (target[1] === 'beforeBegin') {
-                    target[0].insertAdjacentHTML('beforebegin', bodyElements[i].innerHTML);
+                    target[0].insertAdjacentHTML('beforebegin', bodyElement.innerHTML);
                 } else if (target[1] === 'afterBegin') {
-                    target[0].insertAdjacentHTML('afterend', bodyElements[i].innerHTML);
+                    target[0].insertAdjacentHTML('afterend', bodyElement.innerHTML);
                 } else if (target[1] === 'beforeEnd') {
-                    target[0].insertAdjacentHTML('beforeend', bodyElements[i].innerHTML);
+                    target[0].insertAdjacentHTML('beforeend', bodyElement.innerHTML);
                 } else if (target[1] === 'afterEnd') {
-                    target[0].insertAdjacentHTML('afterend', bodyElements[i].innerHTML);
+                    target[0].insertAdjacentHTML('afterend', bodyElement.innerHTML);
                 }
             }
         }
