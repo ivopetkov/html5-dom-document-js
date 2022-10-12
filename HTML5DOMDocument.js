@@ -1,11 +1,11 @@
 /*
  * HTML5 DOM Document JS
  * http://ivopetkov.com/
- * Copyright 2016-2018, Ivo Petkov
+ * Copyright (c) Ivo Petkov
  * Free to use under the MIT license.
  */
 
-html5DOMDocument = (function () {
+var html5DOMDocument = typeof html5DOMDocument !== 'undefined' ? html5DOMDocument : (function () {
 
     var executionsCounter = 0;
 
@@ -60,8 +60,8 @@ html5DOMDocument = (function () {
         }
 
         executionsCounter++;
-        var element = document.createElement('html');
-        element.innerHTML = code;
+
+        var doc = (new DOMParser()).parseFromString(code, 'text/html');
 
         var copyAttributes = function (sourceElement, targetElement) {
             var sourceElementAttributes = sourceElement.attributes;
@@ -72,20 +72,22 @@ html5DOMDocument = (function () {
             }
         };
 
-        prepare(element, executionsCounter);
+        prepare(doc, executionsCounter);
 
-        var headElements = element.querySelectorAll('head');
-        var headElementsCount = headElements.length;
-        for (var i = 0; i < headElementsCount; i++) {
-            var headElement = headElements[i];
+        var sourceHtmlElement = doc.querySelector('html');
+        var targetHtmlElement = document.querySelector('html');
+        if (sourceHtmlElement !== null && targetHtmlElement !== null) {
+            copyAttributes(sourceHtmlElement, targetHtmlElement);
+        }
+
+        var headElement = doc.querySelector('head');
+        if (headElement !== null) {
             copyAttributes(headElement, document.head);
             document.head.insertAdjacentHTML('beforeend', headElement.innerHTML);
         }
 
-        var bodyElements = element.querySelectorAll('body');
-        var bodyElementsCount = bodyElements.length;
-        for (var i = 0; i < bodyElementsCount; i++) {
-            var bodyElement = bodyElements[i];
+        var bodyElement = doc.querySelector('body');
+        if (bodyElement !== null) {
             copyAttributes(bodyElement, document.body);
             if (target === 'afterBodyBegin') {
                 document.body.insertAdjacentHTML('afterbegin', bodyElement.innerHTML);
