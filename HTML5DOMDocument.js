@@ -24,7 +24,8 @@ var html5DOMDocument = typeof html5DOMDocument !== 'undefined' ? html5DOMDocumen
             var breakAfterThisScript = false;
             var scriptToExecute = scriptsToExecute[i];
             scriptToExecute.removeAttribute('data-html5-dom-document-script-' + counter);
-            var newScriptTag = document.createElement('script');
+            var elementDocument = element.nodeType === 9 ? element : element.ownerDocument;
+            var newScriptTag = elementDocument.createElement('script');
             var type = scriptToExecute.getAttribute('type');
             if (type !== null) {
                 newScriptTag.setAttribute("type", type);
@@ -52,7 +53,7 @@ var html5DOMDocument = typeof html5DOMDocument !== 'undefined' ? html5DOMDocumen
     /**
      * 
      * @param string code
-     * @param string target Available values: afterBodyBegin, beforeBodyEnd, [element, innerHTML], [element, outerHTML], [element, beforeBegin], [element, afterBegin], [element, beforeEnd], [element, afterEnd]
+     * @param string target Available values: 'afterBodyBegin', 'beforeBodyEnd', [document, 'afterBodyBegin'], [document, 'beforeBodyEnd'], [element, 'innerHTML'], [element, 'outerHTML'], [element, 'beforeBegin'], [element, 'afterBegin'], [element, 'beforeEnd'], [element, 'afterEnd']
      */
     var insert = function (code, target) {
         if (typeof target === 'undefined') {
@@ -62,6 +63,14 @@ var html5DOMDocument = typeof html5DOMDocument !== 'undefined' ? html5DOMDocumen
         executionsCounter++;
 
         var doc = (new DOMParser()).parseFromString(code, 'text/html');
+        var targetDocument = document;
+
+        if (typeof target === 'object' && typeof target[0] !== 'undefined' && typeof target[1] !== 'undefined') {
+            if (target[1] === 'afterBodyBegin' || target[1] === 'beforeBodyEnd') {
+                targetDocument = target[0];
+                target = target[1];
+            }
+        }
 
         var copyAttributes = function (sourceElement, targetElement) {
             var sourceElementAttributes = sourceElement.attributes;
@@ -75,24 +84,24 @@ var html5DOMDocument = typeof html5DOMDocument !== 'undefined' ? html5DOMDocumen
         prepare(doc, executionsCounter);
 
         var sourceHtmlElement = doc.querySelector('html');
-        var targetHtmlElement = document.querySelector('html');
+        var targetHtmlElement = targetDocument.querySelector('html');
         if (sourceHtmlElement !== null && targetHtmlElement !== null) {
             copyAttributes(sourceHtmlElement, targetHtmlElement);
         }
 
         var headElement = doc.querySelector('head');
         if (headElement !== null) {
-            copyAttributes(headElement, document.head);
-            document.head.insertAdjacentHTML('beforeend', headElement.innerHTML);
+            copyAttributes(headElement, targetDocument.head);
+            targetDocument.head.insertAdjacentHTML('beforeend', headElement.innerHTML);
         }
 
         var bodyElement = doc.querySelector('body');
         if (bodyElement !== null) {
-            copyAttributes(bodyElement, document.body);
+            copyAttributes(bodyElement, targetDocument.body);
             if (target === 'afterBodyBegin') {
-                document.body.insertAdjacentHTML('afterbegin', bodyElement.innerHTML);
+                targetDocument.body.insertAdjacentHTML('afterbegin', bodyElement.innerHTML);
             } else if (target === 'beforeBodyEnd') {
-                document.body.insertAdjacentHTML('beforeend', bodyElement.innerHTML);
+                targetDocument.body.insertAdjacentHTML('beforeend', bodyElement.innerHTML);
             } else if (typeof target === 'object' && typeof target[0] !== 'undefined') {
                 if (typeof target[1] === 'undefined') {
                     target[1] = 'innerHTML';
