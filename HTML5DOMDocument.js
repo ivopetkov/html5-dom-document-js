@@ -122,7 +122,7 @@ var html5DOMDocument = typeof html5DOMDocument !== 'undefined' ? html5DOMDocumen
             }
         }
 
-        execute(document, executionsCounter);
+        execute(targetDocument, executionsCounter);
     };
 
     var evalElement = function (element) {
